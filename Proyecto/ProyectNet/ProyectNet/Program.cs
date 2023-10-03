@@ -1,7 +1,49 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProyectNet.Models;
+
+using ProyectNet.Servicios.Contrato;
+using ProyectNet.Servicios.Implementacion;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+/* -- Configurado el contexto de nuestra base de datos para nuestro proyecto */
+builder.Services.AddDbContext<DbpruebaContext>(options =>{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQL"));
+});
+
+
+builder.Services.AddDbContext<DbpruebaContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQL"));
+});
+
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Inicio/IniciarSesion";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+    });
+
+builder.Services.AddControllersWithViews(options => {
+    options.Filters.Add(
+            new ResponseCacheAttribute
+            {
+                NoStore = true,
+                Location = ResponseCacheLocation.None,
+            }
+        );
+});
+
+
+
 
 var app = builder.Build();
 
@@ -18,6 +60,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Inicio}/{action=IniciarSesion}/{id?}");
 
 app.Run();
